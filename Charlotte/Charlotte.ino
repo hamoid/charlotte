@@ -67,12 +67,14 @@ void loop() {
     delay(15);
   }
 
+  /*
   Serial.print(pos[0]);
   Serial.print(", ");
   Serial.print(pos[1]);
   Serial.print(", ");
   Serial.print(pos[2]);
   Serial.println();
+  */
 
 }
 

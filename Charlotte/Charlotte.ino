@@ -8,6 +8,22 @@ int pos[LEGS] = { 20, 20, 20 };
 int avg[LEGS] = {  0,  0,  0 };
 int  in[LEGS] = {  0,  1,  7 };
 int out[LEGS] = {  2, 10, 12 };
+// TODO
+// Keep list of recent events
+// 1. Walk - needs atan2
+// 2. Direct action (original) algorithm
+// 3. Calm slow moves
+// 4. Broken / death sequence
+// 5. Waiting yoga (bored)
+
+// Delayed fading out reactions (echo)
+// Time warp (slow down time)
+// Predictable, so one can learn how it works
+// Speed and motion range can vary
+
+
+// DONE
+// Detect events. To do that, notice direction changes.
 
 long seconds=0;
 float speed = 0.002;

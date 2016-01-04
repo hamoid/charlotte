@@ -18,8 +18,9 @@ boolean lastGoingUp[LEGS] = { true, true, true };
 // To be used:
 // we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
-float speed = 1.0; 
+float speed = 0.0008; 
 float range = 1.0;
+float time = 0.0;
 int modeCurr = 1;
 int modeNext = 1;
 float modeInterp = 0.5;
@@ -49,7 +50,10 @@ void setup() {
   }
   Serial.begin(9600);
 }
-
+float impulse( float k, float x ) {
+  float h = k * x;
+  return h * exp(1.0f - h);
+}
 void loop() {
 
   // update avg once per second
@@ -60,26 +64,26 @@ void loop() {
     }
     seconds++;
     //speed = random(300) / 100000.0;
-  }  
+  }
+  time = millis() * speed;
 
   for(int i=0; i<LEGS; i++) {
     currInVal = analogRead(inPin[i]) - avg[i];
     currInVal = map(currInVal, -800, 800, 0, 179);
     pos[i] += constrain(currInVal, 50, 140);
     pos[i] /= 2;    
+    // smoothed input constrained to 50 ~ 140
     currInVal = pos[i];
     
-    // yoga
-    // currInVal = int(95 + 55 * (sin(millis() * speed)));
+    // 1. yoga
+    currInVal = int(95 + 55 * (sin(time)));
     
-    // turn around. Sign of +i decides direction
+    // 2. turn around. Sign of +i decides direction
     // the 0.005 decides the rotation speed
-    // currInVal = int(95 + 55 * sin(millis() * 0.005 + i * 2.07));
-    
-    //servo[i].write(currVal);
-    
+    // currInVal = int(95 + 55 * sin(time + i * 2.07));
+        
+    // 3. events
     goingUp = currInVal > lastInVal[i];
-    
     if(goingUp == lastGoingUp[i]) {
       len += abs(currInVal - lastInVal[i]);
     } else {
@@ -87,11 +91,21 @@ void loop() {
       // if we traveled far
       if(len > lightChangeThreshold) {
         // trigger event
-        servo[i].write(random(50, 140));
+        //currInVal = random(50, 140);
       }
       len = 0;
     }
     
+    // 4. walk
+    if(i == 0) {
+      //currInVal = int(95 + 45 * impulse(7, time - int(time)));
+    }
+    if(i == 1) {
+      //currInVal = int(95 - 45 * impulse(7, time - int(time)));
+    }
+    
+    servo[i].write(currInVal);
+
     lastInVal[i] = currInVal;
     lastGoingUp[i] = goingUp;
     

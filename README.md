@@ -17,3 +17,4 @@ An Arduino Nano is her brain, which receives inputs and translate those to movem
 
 https://vimeo.com/152180731
 
+https://vine.co/v/i5aLPqp6wMz

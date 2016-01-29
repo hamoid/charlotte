@@ -14,20 +14,24 @@ int inPin[LEGS] = { 0, 1, 7 };
 int outPin[LEGS] = { 2,10, 12 };
 int lastInVal[LEGS] = { 80, 80, 80 };
 boolean lastGoingUp[LEGS] = { true, true, true };
+boolean triggerEvent = false;
 
 // To be used:
 // we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
 float speed = 0.0008; 
-float range = 1.0;
+float range = 1.0; // unused so far
 float time = 0.0;
-int modeCurr = 1;
-int modeNext = 1;
-float modeInterp = 0.5;
 
-long seconds=0;
+// To do: generate both behaviours, and then cross fade them
+int behCurr = 1; // unused so far
+int behNext = 1;
+float behTime = 0.5; // this will increase from 0 to 1
+
+long timeToUpdAvg=0;
 
 void setup() {
+  // Configure servo pins
   for(int i=0; i<LEGS; i++) {
     servo[i].attach(outPin[i]);
   }
@@ -35,15 +39,20 @@ void setup() {
 }
 void loop() {
 
-  // update avg once per second
-  if (millis() / 1000 > seconds){
+  // Update average once per second
+  if (millis() / 1000 > timeToUpdAvg){
     for(int i=0; i<LEGS; i++) {
+      // lerp 50% towards read value
       avg[i] += analogRead(inPin[i]);
       avg[i] /= 2;
     }
-    seconds++;
+    // schedule the next update
+    timeToUpdAvg++;
+    
+    // test speed randomization
     //speed = random(300) / 100000.0;
   }
+  
   time = millis() * speed;
 
   for(int i=0; i<LEGS; i++) {
@@ -62,6 +71,7 @@ void loop() {
     // currInVal = int(95 + 55 * sin(time + i * 2.07));
         
     // 3. events
+    triggerEvent = false;
     goingUp = currInVal > lastInVal[i];
     if(goingUp == lastGoingUp[i]) {
       len += abs(currInVal - lastInVal[i]);
@@ -69,10 +79,12 @@ void loop() {
       // when the direction changes check
       // if we traveled far
       if(len > lightChangeThreshold) {
-        // trigger event
-        //currInVal = random(50, 140);
+        triggerEvent = true;
       }
       len = 0;
+    }
+    if(triggerEvent) {
+      currInVal = random(50, 140);
     }
     
     // 4. walk

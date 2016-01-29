@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-int currInVal, currVal;
+int currInVal;
 int len = 0;
 // Maybe the threshold should change to maintain a reasonable rate of events?
 const int lightChangeThreshold = 15;
@@ -24,22 +24,6 @@ float time = 0.0;
 int modeCurr = 1;
 int modeNext = 1;
 float modeInterp = 0.5;
-
-// TODO
-// Keep list of recent events
-// 1. Walk
-// 2. Direct action (original) algorithm
-// 3. Calm slow moves
-// 4. Broken / death sequence
-// 5. Waiting yoga (bored)
-
-// Delayed fading out reactions (echo)
-// Time warp (slow down or speed up time)
-// Predictable, so one can learn how it works
-// Speed and motion range can vary
-
-// DONE
-// Detect events. To do that, notice direction changes.
 
 long seconds=0;
 

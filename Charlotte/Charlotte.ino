@@ -1,38 +1,44 @@
 #include <Servo.h>
 
-int currInVal;
-int len = 0;
-// Maybe the threshold should change to maintain a reasonable rate of events?
-const int lightChangeThreshold = 15;
+// Maybe the threshold should change to
+// maintain a reasonable rate of events?
+const int LIGHT_CHANGE_THRESHOLD = 15;
+const int BEH_DIRECT = 0;
+const int BEH_TURN = 1;
+const int BEH_EV_RND = 2;
+const int BEH_WALK = 3;
+const int BEH_YOGA = 4;
+
+int currInVal, currVal;
+int lightChangeDelta = 0;
 boolean goingUp = true;
+long timeToUpdAvg = 0;
+boolean doUpdAvg = false;
+
 const int LEGS = 3;
 Servo servo[LEGS];
-
 int pos[LEGS] = { 20, 20, 20 };
 int avg[LEGS] = { 0, 0, 0 };
 int inPin[LEGS] = { 0, 1, 7 };
-int outPin[LEGS] = { 2,10, 12 };
+int outPin[LEGS] = { 2, 10, 12 };
 int lastInVal[LEGS] = { 80, 80, 80 };
 boolean lastGoingUp[LEGS] = { true, true, true };
 boolean triggerEvent = false;
 
-// To be used:
-// we need envelopes to alter speed and range
+// To do: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
-float speed = 0.0008; 
+float speed = 0.0008;
 float range = 1.0; // unused so far
 float time = 0.0;
 
 // To do: generate both behaviours, and then cross fade them
 int behCurr = 1; // unused so far
-int behNext = 1;
+int behNext = 1; // unused so far
 float behTime = 0.5; // this will increase from 0 to 1
-
-long timeToUpdAvg=0;
 
 void setup() {
   // Configure servo pins
-  for(int i=0; i<LEGS; i++) {
+  for (int i = 0; i < LEGS; i++) {
     servo[i].attach(outPin[i]);
   }
   Serial.begin(9600);
@@ -40,67 +46,79 @@ void setup() {
 void loop() {
 
   // Update average once per second
-  if (millis() / 1000 > timeToUpdAvg){
-    for(int i=0; i<LEGS; i++) {
-      // lerp 50% towards read value
-      avg[i] += analogRead(inPin[i]);
-      avg[i] /= 2;
-    }
-    // schedule the next update
-    timeToUpdAvg++;
-    
-    // test speed randomization
-    //speed = random(300) / 100000.0;
-  }
-  
+  doUpdAvg = (millis() / 1000) > timeToUpdAvg;
+
   time = millis() * speed;
 
-  for(int i=0; i<LEGS; i++) {
-    currInVal = analogRead(inPin[i]) - avg[i];
-    currInVal = map(currInVal, -800, 800, 0, 179);
-    pos[i] += constrain(currInVal, 50, 140);
-    pos[i] /= 2;    
-    // smoothed input constrained to 50 ~ 140
-    currInVal = pos[i];
-    
-    // 1. yoga
-    currInVal = int(95 + 55 * (sin(time)));
-    
-    // 2. turn around. Sign of +i decides direction
-    // the 0.005 decides the rotation speed
-    // currInVal = int(95 + 55 * sin(time + i * 2.07));
-        
-    // 3. events
+  for (int i = 0; i < LEGS; i++) {
+    currInVal = analogRead(inPin[i]);
+
+    if (doUpdAvg) {
+      // lerp 50% towards read value
+      avg[i] += currInVal;
+      avg[i] /= 2;
+    }
+
+    currVal = currInVal - avg[i];
+    currVal = map(currVal, -800, 800, 0, 179);
+
+    // detect events
     triggerEvent = false;
-    goingUp = currInVal > lastInVal[i];
-    if(goingUp == lastGoingUp[i]) {
-      len += abs(currInVal - lastInVal[i]);
+    goingUp = pos[i] > lastInVal[i];
+    if (goingUp == lastGoingUp[i]) {
+      lightChangeDelta += abs(pos[i] - lastInVal[i]);
     } else {
       // when the direction changes check
       // if we traveled far
-      if(len > lightChangeThreshold) {
+      if (lightChangeDelta > LIGHT_CHANGE_THRESHOLD) {
         triggerEvent = true;
       }
-      len = 0;
+      lightChangeDelta = 0;
     }
-    if(triggerEvent) {
-      currInVal = random(50, 140);
-    }
-    
-    // 4. walk
-    if(i == 0) {
-      //currInVal = int(95 + 45 * impulse(7, time - int(time)));
-    }
-    if(i == 1) {
-      //currInVal = int(95 - 45 * impulse(7, time - int(time)));
-    }
-    
-    servo[i].write(currInVal);
 
-    lastInVal[i] = currInVal;
+    switch (behCurr) {
+      case BEH_DIRECT:
+        pos[i] += constrain(currVal, 50, 140);
+        pos[i] /= 2;
+        break;
+
+      case BEH_TURN:
+        // Sign of +i decides rotation direction
+        // time decides the rotation speed
+        pos[i] = int(95 + 55 * sin(time + i * 2.07));
+        break;
+
+      case BEH_EV_RND:
+        if (triggerEvent) {
+          pos[i] = random(50, 140);
+        }
+        break;
+
+      case BEH_WALK:
+        if (i == 0) {
+          pos[i] = int(95 + 45 * impulse(7, time - int(time)));
+        }
+        if (i == 1) {
+          pos[i] = int(95 - 45 * impulse(7, time - int(time)));
+        }
+        break;
+
+      case BEH_YOGA:
+        pos[i] = int(95 + 55 * (sin(time)));
+        break;
+    }
+
+    servo[i].write(pos[i]);
+
+    lastInVal[i] = pos[i];
     lastGoingUp[i] = goingUp;
-    
+
     delay(15);
+  }
+
+  // schedule the next update,
+  if (doUpdAvg) {
+    timeToUpdAvg++;
   }
 
   /*

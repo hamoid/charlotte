@@ -15,6 +15,13 @@ An Arduino Nano is her brain, which receives inputs and translate those to movem
 * CV, light programming and video production: Peter A. Kolski - http://www.bildpeter.de/
 * Light design: Kalma - http://www.kalmalab.com/
 
-https://vimeo.com/152180731
+## Exhibitions and shows
 
-https://vine.co/v/i5aLPqp6wMz
+* Berlin MakerFaire 2015
+* Berlin JuniorLab 2015
+* Group exhibition "Human [heart] Robot" at Spektrum Berlin in 2015
+
+## Video
+
+* https://vimeo.com/152180731
+* https://vine.co/v/i5aLPqp6wMz

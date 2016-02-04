@@ -3,37 +3,37 @@
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
 const int LIGHT_CHANGE_THRESHOLD = 15;
-const int BEH_DIRECT = 0;
-const int BEH_TURN = 1;
-const int BEH_EV_RND = 2;
-const int BEH_WALK = 3;
-const int BEH_YOGA = 4;
+const int BEH_DIRECT  = 0;
+const int BEH_TURN    = 1;
+const int BEH_EV_RND  = 2;
+const int BEH_WALK    = 3;
+const int BEH_YOGA    = 4;
 
-int currInVal, currVal;
-int lightChangeDelta = 0;
-boolean goingUp = true;
-long timeToUpdAvg = 0;
-boolean doUpdAvg = false;
+int     currInVal, currVal;
+int     lightChangeDelta  = 0;
+boolean goingUp           = true;
+long    timeToUpdAvg      = 0;
+boolean doUpdAvg          = false;
 
-const int LEGS = 3;
-Servo servo[LEGS];
-int pos[LEGS] = { 20, 20, 20 };
-int avg[LEGS] = { 0, 0, 0 };
-int inPin[LEGS] = { 0, 1, 7 };
-int outPin[LEGS] = { 2, 10, 12 };
-int lastInVal[LEGS] = { 80, 80, 80 };
-boolean lastGoingUp[LEGS] = { true, true, true };
-boolean triggerEvent = false;
+const int   LEGS = 3;
+Servo       servo[LEGS];
+int         pos[LEGS]       = { 20, 20, 20 };
+int         avg[LEGS]       = { 0, 0, 0 };
+int         inPin[LEGS]     = { 0, 1, 7 };
+int         outPin[LEGS]    = { 2, 10, 12 };
+int         lastInVal[LEGS] = { 80, 80, 80 };
+boolean     lastGoingUp[LEGS] = { true, true, true };
+boolean     triggerEvent    = false;
 
-// To do: we need envelopes to alter speed and range
+// TODO: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
 float speed = 0.0008;
 float range = 1.0; // unused so far
-float time = 0.0;
+float time  = 0.0;
 
-// To do: generate both behaviours, and then cross fade them
-int behCurr = 1; // unused so far
-int behNext = 1; // unused so far
+// TODO: generate both behaviours, and then cross fade them
+int   behCurr = 1; // unused so far
+int   behNext = 1; // unused so far
 float behTime = 0.5; // this will increase from 0 to 1
 
 void setup() {
@@ -76,6 +76,7 @@ void loop() {
       lightChangeDelta = 0;
     }
 
+      //TODO replace switch-case with array of function pointer
     switch (behCurr) {
       case BEH_DIRECT:
         pos[i] += constrain(currVal, 50, 140);

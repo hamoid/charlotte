@@ -36,6 +36,9 @@ int   behCurr = 1; // unused so far
 int   behNext = 1; // unused so far
 float behTime = 0.5; // this will increase from 0 to 1
 
+//----------------------------- SETUP ----------------------------------------------
+//----------------------------------------------------------------------------------
+
 void setup() {
   // Configure servo pins
   for (int i = 0; i < LEGS; i++) {
@@ -43,6 +46,10 @@ void setup() {
   }
   Serial.begin(9600);
 }
+
+//----------------------------- LOOP -----------------------------------------------
+//----------------------------------------------------------------------------------
+
 void loop() {
 
   // Update average once per second
@@ -77,6 +84,7 @@ void loop() {
     }
 
       //TODO replace switch-case with array of function pointer
+      //TODO signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
     switch (behCurr) {
       case BEH_DIRECT:
         pos[i] += constrain(currVal, 50, 140);

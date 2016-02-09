@@ -7,11 +7,13 @@
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
 const int   LIGHT_CHANGE_THRESHOLD = 15;
-const int   BEH_DIRECT  = 0;
-const int   BEH_TURN    = 1;
-const int   BEH_EV_RND  = 2;
-const int   BEH_WALK    = 3;
-const int   BEH_YOGA    = 4;
+const int   BEHAVIOR_MAX_AMOUNT = 5;
+const int   BEHAVIOR_DIRECT     = 0;
+const int   BEHAVIOR_TURN       = 1;
+const int   BEHAVIOR_EV_RND     = 2;
+const int   BEHAVIOR_WALK       = 3;
+const int   BEHAVIOR_YOGA       = 4;
+
 
 int         currInVal, currVal;
 int         lightChangeDelta  = 0;
@@ -47,8 +49,8 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 */
 
 //typedef void ( *func_ptr_t )( int ); // Function pointers which uses global variables
-//func_ptr_t behaviorPointerArray[ 5 ];
-void ( *behaviorPointerArray[ 5 ] )( int );
+//func_ptr_t behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
+void ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( int );
 
 void behaviorDirected( int leg );
 void behaviorTurn( int leg );
@@ -68,11 +70,11 @@ void setup() {
 
     // Function pointer assignment not possible to be global (so done here)
     // Assume the declaration has to be assigned first via compiler
-    behaviorPointerArray[ BEH_DIRECT ]    =   behaviorDirected;
-    behaviorPointerArray[ BEH_TURN ]      =   behaviorTurn;
-    behaviorPointerArray[ BEH_EV_RND ]    =   behaviorRandom;
-    behaviorPointerArray[ BEH_WALK ]      =   behaviorWalk;
-    behaviorPointerArray[ BEH_YOGA ]      =   behaviorYoga;
+    behaviorPointerArray[ BEHAVIOR_DIRECT ]    =   behaviorDirected;
+    behaviorPointerArray[ BEHAVIOR_TURN ]      =   behaviorTurn;
+    behaviorPointerArray[ BEHAVIOR_EV_RND ]    =   behaviorRandom;
+    behaviorPointerArray[ BEHAVIOR_WALK ]      =   behaviorWalk;
+    behaviorPointerArray[ BEHAVIOR_YOGA ]      =   behaviorYoga;
 
 }
 

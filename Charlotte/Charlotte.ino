@@ -52,13 +52,9 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
-/* TODO Functional approach (for behavior crossFade & external file):
- * signature: pos (*) currVal, time, triggerEvent, leg(i)
-*/
-using func_ptr_t = int ( * )( State, int );
-func_ptr_t behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
 
-//int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State );
+using       func_ptr_t = int ( * )( State, int );
+func_ptr_t  behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------

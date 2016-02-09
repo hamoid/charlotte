@@ -1,5 +1,9 @@
 #include <Servo.h>
 
+
+//----------------------------- GLOBAL VARIABLES -----------------------------------
+//----------------------------------------------------------------------------------
+
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
 const int LIGHT_CHANGE_THRESHOLD = 15;
@@ -35,6 +39,15 @@ float time  = 0.0;
 int   behCurr = 1; // unused so far
 int   behNext = 1; // unused so far
 float behTime = 0.5; // this will increase from 0 to 1
+
+//----------------------------- Function Prototypes ---------------------------------
+//----------------------------------------------------------------------------------
+/*    signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
+*    typedef int (*func_ptr_t)( int );
+*    func_ptr_t func_ptr_array[2];
+*    int f1( int );
+*    func_ptr_array[0] = f1;
+*/
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -83,8 +96,9 @@ void loop() {
       lightChangeDelta = 0;
     }
 
-      //TODO replace switch-case with array of function pointer
-      //TODO signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
+      /*TODO replace switch-case with array of function pointer
+       * */
+
     switch (behCurr) {
       case BEH_DIRECT:
         pos[i] += constrain(currVal, 50, 140);

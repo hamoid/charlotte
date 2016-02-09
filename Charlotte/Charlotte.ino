@@ -36,27 +36,25 @@ float range = 1.0; // unused so far
 float time  = 0.0;
 
 // TODO: generate both behaviours, and then cross fade them
-int   behCurr = 1; // unused so far
+int   behaviorCurrent = 1; // unused so far
 int   behNext = 1; // unused so far
 float behTime = 0.5; // this will increase from 0 to 1
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
-/*    signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
-*    typedef int (*func_ptr_t)( int );
-*    func_ptr_t func_ptr_array[2];
-*    int f1( int );
-*    func_ptr_array[0] = f1;
+/* TODO Functional approach:
+ * signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
 */
-typedef void (*func_ptr_t)( int ); // Function pointers who use global variables
-func_ptr_t func_ptr_array[5];
+
+//typedef void ( *func_ptr_t )( int ); // Function pointers who use global variables
+//func_ptr_t func_ptr_array[ 5 ];
+void ( *func_ptr_array[ 5 ] )( int );
 
 void behaviorDirected( int leg );
 void behaviorTurn( int leg );
 void behaviorRandom( int leg );
 void behaviorWalk( int leg );
 void behaviorYoga( int leg );
-
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -67,6 +65,15 @@ void setup() {
     servo[i].attach(outPin[i]);
   }
   Serial.begin(9600);
+
+    // Function pointer assignment not possible to be global (so done here)
+    // Assume the declaration has to be assigned first via compiler
+    func_ptr_array[ BEH_DIRECT ]    =   behaviorDirected;
+    func_ptr_array[ BEH_TURN ]      =   behaviorTurn;
+    func_ptr_array[ BEH_EV_RND ]    =   behaviorRandom;
+    func_ptr_array[ BEH_WALK ]      =   behaviorWalk;
+    func_ptr_array[ BEH_YOGA ]      =   behaviorYoga;
+
 }
 
 //----------------------------- LOOP -----------------------------------------------
@@ -104,31 +111,9 @@ void loop() {
       }
       lightChangeDelta = 0;
     }
-
-      /*TODO replace switch-case with array of function pointer
-       * */
-
-    switch (behCurr) {
-      case BEH_DIRECT:
-        behaviorDirected( legCurrent );
-        break;
-
-      case BEH_TURN:
-        behaviorTurn( legCurrent );
-        break;
-
-      case BEH_EV_RND:
-        behaviorRandom( legCurrent );
-        break;
-
-      case BEH_WALK:
-        behaviorWalk( legCurrent );
-        break;
-
-      case BEH_YOGA:
-        behaviorYoga( legCurrent );
-        break;
-    }
+      
+      // Perform movement behavior
+      func_ptr_array[ behaviorCurrent ]( legCurrent );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 

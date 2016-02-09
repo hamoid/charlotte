@@ -1,8 +1,18 @@
 #include <Servo.h>
 
-
 //----------------------------- GLOBAL VARIABLES -----------------------------------
 //----------------------------------------------------------------------------------
+
+struct State
+{
+    float time          = 0.0;
+    int   currentValue  = 0;
+    bool  triggerEvent  = false;
+    int   legCurrent    = 0;
+};
+
+State stateGlobal;
+
 
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
@@ -14,8 +24,7 @@ const int   BEHAVIOR_EV_RND     = 2;
 const int   BEHAVIOR_WALK       = 3;
 const int   BEHAVIOR_YOGA       = 4;
 
-
-int         currInVal, currVal;
+int         currInVal;
 int         lightChangeDelta  = 0;
 boolean     goingUp           = true;
 long        timeToUpdAvg      = 0;
@@ -29,13 +38,12 @@ int         inPin[LEGS]     = { 0, 1, 7 };
 int         outPin[LEGS]    = { 2, 10, 12 };
 int         lastInVal[LEGS] = { 80, 80, 80 };
 boolean     lastGoingUp[LEGS] = { true, true, true };
-boolean     triggerEvent    = false;
 
 // TODO: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
 float speed = 0.0008;
 float range = 1.0; // unused so far
-float time  = 0.0;
+
 
 // TODO: generate both behaviours, and then cross fade them
 int   behaviorCurrent   = 1; // unused so far
@@ -45,12 +53,15 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
 /* TODO Functional approach (for behavior crossFade & external file):
- * signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
+ * signature: pos (*) currVal, time, triggerEvent, leg(i)
 */
-
 //typedef void ( *func_ptr_t )( int ); // Function pointers which uses global variables
+
+//using func_ptr_t = int ( * )( State );
 //func_ptr_t behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
-void ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( int );
+
+//void ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( int );
+int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State );
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -80,10 +91,10 @@ void loop() {
   // Update average once per second
   doUpdAvg = (millis() / 1000) > timeToUpdAvg;
 
-  time = millis() * speed;
+    stateGlobal.time = millis() * speed;
 
   for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
-    currInVal = analogRead(inPin[ legCurrent ]);
+    stateGlobal.currentValue = analogRead(inPin[ legCurrent ]);
 
     if (doUpdAvg) {
       // lerp 50% towards read value
@@ -91,11 +102,11 @@ void loop() {
       avg[ legCurrent ] /= 2;
     }
 
-    currVal = currInVal - avg[ legCurrent ];
-    currVal = map(currVal, -800, 800, 0, 179);
+      stateGlobal.currentValue -= avg[ legCurrent ];
+      stateGlobal.currentValue = map(stateGlobal.currentValue, -800, 800, 0, 179);
 
     // detect events
-    triggerEvent = false;
+    stateGlobal.triggerEvent = false;
     goingUp = pos[ legCurrent ] > lastInVal[ legCurrent ];
     if (goingUp == lastGoingUp[ legCurrent ]) {
       lightChangeDelta += abs(pos[ legCurrent ] - lastInVal[ legCurrent ]);
@@ -103,13 +114,14 @@ void loop() {
       // when the direction changes check
       // if we traveled far
       if (lightChangeDelta > LIGHT_CHANGE_THRESHOLD) {
-        triggerEvent = true;
+        stateGlobal.triggerEvent = true;
       }
       lightChangeDelta = 0;
     }
       
       // Perform movement behavior
-      behaviorPointerArray[ behaviorCurrent ]( legCurrent );
+      stateGlobal.legCurrent = legCurrent;
+      behaviorPointerArray[ behaviorCurrent ]( stateGlobal );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 
@@ -143,3 +155,47 @@ void loop() {
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+
+int behaviorDirected( State state )
+{
+//  pos[ leg ] += constrain( state.currentValue, 50, 140);
+//  pos[ leg ] /= 2;
+}
+
+//----------------------------------------------------------------------------------
+
+int behaviorTurn( State state )
+{
+  // Sign of +leg  decides rotation direction
+  // time decides the rotation speed
+    return int(95 + 55 * sin( state.time + state.legCurrent  * 2.07));
+}
+
+//----------------------------------------------------------------------------------
+
+int behaviorRandom( State state )
+{
+  if ( state.triggerEvent )
+  {
+      return random( 50, 140 );
+  }
+}
+
+//----------------------------------------------------------------------------------
+
+int behaviorWalk( State state )
+{
+  if ( state.legCurrent == 0) {
+      return int(95 + 45 * impulse(7, state.time - int(state.time) ) );
+  }
+  if ( state.legCurrent == 1) {
+      return int(95 - 45 * impulse(7, state.time - int(state.time) ) );
+  }
+}
+
+//----------------------------------------------------------------------------------
+
+int behaviorYoga( State state )
+{
+  return int(95 + 55 * ( sin( state.time ) ) );
+}

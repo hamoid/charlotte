@@ -8,8 +8,8 @@ struct State
     float time          = 0.0;
     int   currentValue  = 0;
     bool  triggerEvent  = false;
-    int   legCurrent    = 0;
 };
+
 
 State stateGlobal;
 
@@ -55,13 +55,10 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 /* TODO Functional approach (for behavior crossFade & external file):
  * signature: pos (*) currVal, time, triggerEvent, leg(i)
 */
-//typedef void ( *func_ptr_t )( int ); // Function pointers which uses global variables
+using func_ptr_t = int ( * )( State, int );
+func_ptr_t behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
 
-//using func_ptr_t = int ( * )( State );
-//func_ptr_t behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
-
-//void ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( int );
-int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State );
+//int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State );
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -120,8 +117,7 @@ void loop() {
     }
       
       // Perform movement behavior
-      stateGlobal.legCurrent = legCurrent;
-      behaviorPointerArray[ behaviorCurrent ]( stateGlobal );
+      pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 
@@ -156,46 +152,3 @@ void loop() {
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 
-int behaviorDirected( State state )
-{
-//  pos[ leg ] += constrain( state.currentValue, 50, 140);
-//  pos[ leg ] /= 2;
-}
-
-//----------------------------------------------------------------------------------
-
-int behaviorTurn( State state )
-{
-  // Sign of +leg  decides rotation direction
-  // time decides the rotation speed
-    return int(95 + 55 * sin( state.time + state.legCurrent  * 2.07));
-}
-
-//----------------------------------------------------------------------------------
-
-int behaviorRandom( State state )
-{
-  if ( state.triggerEvent )
-  {
-      return random( 50, 140 );
-  }
-}
-
-//----------------------------------------------------------------------------------
-
-int behaviorWalk( State state )
-{
-  if ( state.legCurrent == 0) {
-      return int(95 + 45 * impulse(7, state.time - int(state.time) ) );
-  }
-  if ( state.legCurrent == 1) {
-      return int(95 - 45 * impulse(7, state.time - int(state.time) ) );
-  }
-}
-
-//----------------------------------------------------------------------------------
-
-int behaviorYoga( State state )
-{
-  return int(95 + 55 * ( sin( state.time ) ) );
-}

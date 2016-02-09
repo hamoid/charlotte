@@ -6,18 +6,18 @@
 
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
-const int LIGHT_CHANGE_THRESHOLD = 15;
-const int BEH_DIRECT  = 0;
-const int BEH_TURN    = 1;
-const int BEH_EV_RND  = 2;
-const int BEH_WALK    = 3;
-const int BEH_YOGA    = 4;
+const int   LIGHT_CHANGE_THRESHOLD = 15;
+const int   BEH_DIRECT  = 0;
+const int   BEH_TURN    = 1;
+const int   BEH_EV_RND  = 2;
+const int   BEH_WALK    = 3;
+const int   BEH_YOGA    = 4;
 
-int     currInVal, currVal;
-int     lightChangeDelta  = 0;
-boolean goingUp           = true;
-long    timeToUpdAvg      = 0;
-boolean doUpdAvg          = false;
+int         currInVal, currVal;
+int         lightChangeDelta  = 0;
+boolean     goingUp           = true;
+long        timeToUpdAvg      = 0;
+boolean     doUpdAvg          = false;
 
 const int   LEGS = 3;
 Servo       servo[LEGS];
@@ -36,19 +36,19 @@ float range = 1.0; // unused so far
 float time  = 0.0;
 
 // TODO: generate both behaviours, and then cross fade them
-int   behaviorCurrent = 1; // unused so far
-int   behNext = 1; // unused so far
-float behTime = 0.5; // this will increase from 0 to 1
+int   behaviorCurrent   = 1; // unused so far
+int   behaviorNext      = 1; // unused so far
+float behaviorTime      = 0.5; // this will increase from 0 to 1
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
-/* TODO Functional approach:
+/* TODO Functional approach (for behavior crossFade & external file):
  * signature: pos (*) pos, currVal, time, triggerEvent, leg(i)
 */
 
-//typedef void ( *func_ptr_t )( int ); // Function pointers who use global variables
-//func_ptr_t func_ptr_array[ 5 ];
-void ( *func_ptr_array[ 5 ] )( int );
+//typedef void ( *func_ptr_t )( int ); // Function pointers which uses global variables
+//func_ptr_t behaviorPointerArray[ 5 ];
+void ( *behaviorPointerArray[ 5 ] )( int );
 
 void behaviorDirected( int leg );
 void behaviorTurn( int leg );
@@ -68,11 +68,11 @@ void setup() {
 
     // Function pointer assignment not possible to be global (so done here)
     // Assume the declaration has to be assigned first via compiler
-    func_ptr_array[ BEH_DIRECT ]    =   behaviorDirected;
-    func_ptr_array[ BEH_TURN ]      =   behaviorTurn;
-    func_ptr_array[ BEH_EV_RND ]    =   behaviorRandom;
-    func_ptr_array[ BEH_WALK ]      =   behaviorWalk;
-    func_ptr_array[ BEH_YOGA ]      =   behaviorYoga;
+    behaviorPointerArray[ BEH_DIRECT ]    =   behaviorDirected;
+    behaviorPointerArray[ BEH_TURN ]      =   behaviorTurn;
+    behaviorPointerArray[ BEH_EV_RND ]    =   behaviorRandom;
+    behaviorPointerArray[ BEH_WALK ]      =   behaviorWalk;
+    behaviorPointerArray[ BEH_YOGA ]      =   behaviorYoga;
 
 }
 
@@ -113,7 +113,7 @@ void loop() {
     }
       
       // Perform movement behavior
-      func_ptr_array[ behaviorCurrent ]( legCurrent );
+      behaviorPointerArray[ behaviorCurrent ]( legCurrent );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 

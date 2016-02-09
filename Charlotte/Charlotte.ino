@@ -48,6 +48,15 @@ float behTime = 0.5; // this will increase from 0 to 1
 *    int f1( int );
 *    func_ptr_array[0] = f1;
 */
+typedef void (*func_ptr_t)( int ); // Function pointers who use global variables
+func_ptr_t func_ptr_array[5];
+
+void behaviorDirected( int leg );
+void behaviorTurn( int leg );
+void behaviorRandom( int leg );
+void behaviorWalk( int leg );
+void behaviorYoga( int leg );
+
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -70,23 +79,23 @@ void loop() {
 
   time = millis() * speed;
 
-  for (int i = 0; i < LEGS; i++) {
-    currInVal = analogRead(inPin[i]);
+  for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
+    currInVal = analogRead(inPin[ legCurrent ]);
 
     if (doUpdAvg) {
       // lerp 50% towards read value
-      avg[i] += currInVal;
-      avg[i] /= 2;
+      avg[ legCurrent ] += currInVal;
+      avg[ legCurrent ] /= 2;
     }
 
-    currVal = currInVal - avg[i];
+    currVal = currInVal - avg[ legCurrent ];
     currVal = map(currVal, -800, 800, 0, 179);
 
     // detect events
     triggerEvent = false;
-    goingUp = pos[i] > lastInVal[i];
-    if (goingUp == lastGoingUp[i]) {
-      lightChangeDelta += abs(pos[i] - lastInVal[i]);
+    goingUp = pos[ legCurrent ] > lastInVal[ legCurrent ];
+    if (goingUp == lastGoingUp[ legCurrent ]) {
+      lightChangeDelta += abs(pos[ legCurrent ] - lastInVal[ legCurrent ]);
     } else {
       // when the direction changes check
       // if we traveled far
@@ -101,40 +110,30 @@ void loop() {
 
     switch (behCurr) {
       case BEH_DIRECT:
-        pos[i] += constrain(currVal, 50, 140);
-        pos[i] /= 2;
+        behaviorDirected( legCurrent );
         break;
 
       case BEH_TURN:
-        // Sign of +i decides rotation direction
-        // time decides the rotation speed
-        pos[i] = int(95 + 55 * sin(time + i * 2.07));
+        behaviorTurn( legCurrent );
         break;
 
       case BEH_EV_RND:
-        if (triggerEvent) {
-          pos[i] = random(50, 140);
-        }
+        behaviorRandom( legCurrent );
         break;
 
       case BEH_WALK:
-        if (i == 0) {
-          pos[i] = int(95 + 45 * impulse(7, time - int(time)));
-        }
-        if (i == 1) {
-          pos[i] = int(95 - 45 * impulse(7, time - int(time)));
-        }
+        behaviorWalk( legCurrent );
         break;
 
       case BEH_YOGA:
-        pos[i] = int(95 + 55 * (sin(time)));
+        behaviorYoga( legCurrent );
         break;
     }
 
-    servo[i].write(pos[i]);
+    servo[ legCurrent ].write(pos[ legCurrent ]);
 
-    lastInVal[i] = pos[i];
-    lastGoingUp[i] = goingUp;
+    lastInVal[ legCurrent ] = pos[ legCurrent ];
+    lastGoingUp[ legCurrent ] = goingUp;
 
     delay(15);
   }
@@ -155,3 +154,53 @@ void loop() {
 
 }
 
+//----------------------------- FUNCTION DECLARATION -------------------------------
+//----------------------------------------------------------------------------------
+
+void behaviorDirected( int leg )
+{
+    pos[ leg ] += constrain(currVal, 50, 140);
+    pos[ leg ] /= 2;
+}
+
+//----------------------------------------------------------------------------------
+
+void behaviorTurn( int leg )
+{
+    // Sign of +leg  decides rotation direction
+    // time decides the rotation speed
+    pos[ leg ] = int(95 + 55 * sin(time + leg  * 2.07));
+}
+
+//----------------------------------------------------------------------------------
+
+void behaviorRandom( int leg )
+{
+    if (triggerEvent)
+    {
+        pos[ leg ] = random( 50, 140 );
+    }
+}
+
+//----------------------------------------------------------------------------------
+
+void behaviorWalk( int leg )
+{
+    if ( leg == 0) {
+        pos[ leg ] = int(95 + 45 * impulse(7, time - int(time)));
+    }
+    if ( leg == 1) {
+        pos[ leg ] = int(95 - 45 * impulse(7, time - int(time)));
+    }
+}
+
+//----------------------------------------------------------------------------------
+
+void behaviorYoga( int leg )
+{
+    pos[ leg ] = int(95 + 55 * (sin(time)));
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------

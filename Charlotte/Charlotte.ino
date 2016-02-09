@@ -122,6 +122,11 @@ void loop() {
     lastInVal[ legCurrent ] = pos[ legCurrent ];
     lastGoingUp[ legCurrent ] = goingUp;
 
+    // Test. Change behavior every 4 seconds.
+    // The changes should happen according
+    // to user interaction (in the future)
+    behaviorCurrent = (millis() / 4000) % 5;
+
     delay(15);
   }
 

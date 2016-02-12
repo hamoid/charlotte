@@ -18,20 +18,19 @@ const int   BEHAVIOR_EV_RND     = 2;
 const int   BEHAVIOR_WALK       = 3;
 const int   BEHAVIOR_YOGA       = 4;
 
-int         currInVal;
 int         lightChangeDelta  = 0;
-boolean     goingUp           = true;
+boolean     isGoingUp         = true;
 long        timeToUpdAvg      = 0;
-boolean     doUpdAvg          = false;
+boolean     doUpdateLightAvg  = false;
 
 const int   LEGS = 3;
-Servo       servo[LEGS];
-int         pos[LEGS]       = { 20, 20, 20 };
-int         avg[LEGS]       = { 0, 0, 0 };
-int         inPin[LEGS]     = { 0, 1, 7 };
-int         outPin[LEGS]    = { 2, 10, 12 };
-int         lastInVal[LEGS] = { 80, 80, 80 };
-boolean     lastGoingUp[LEGS] = { true, true, true };
+Servo       servoCtrl[LEGS];
+int         servoPos[LEGS]        = { 20, 20, 20 };
+int         avgLightValue[LEGS] = { 0, 0, 0 };
+int         inPin[LEGS]      = { 0, 1, 7 };
+int         outPin[LEGS]     = { 2, 10, 12 };
+int         lastLightValue[LEGS]    = { 80, 80, 80 };
+boolean     wasGoingUp[LEGS] = { true, true, true };
 
 // TODO: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
@@ -57,7 +56,7 @@ int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int, int );
 void setup() {
   // Configure servo pins
   for (int i = 0; i < LEGS; i++) {
-    servo[i].attach(outPin[i]);
+    servoCtrl[i].attach(outPin[i]);
   }
   Serial.begin(9600);
 
@@ -77,27 +76,27 @@ void setup() {
 void loop() {
 
   // Update average once per second
-  doUpdAvg = (millis() / 1000) > timeToUpdAvg;
+  doUpdateLightAvg = (millis() / 1000) > timeToUpdAvg;
 
   stateGlobal.time = millis() * speed;
 
   for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
-    stateGlobal.currentValue = analogRead(inPin[ legCurrent ]);
+    stateGlobal.currLightValue = analogRead(inPin[ legCurrent ]);
 
-    if (doUpdAvg) {
+    if (doUpdateLightAvg) {
       // lerp 50% towards read value
-      avg[ legCurrent ] += currInVal;
-      avg[ legCurrent ] /= 2;
+      avgLightValue[ legCurrent ] += stateGlobal.currLightValue;
+      avgLightValue[ legCurrent ] /= 2;
     }
 
-    stateGlobal.currentValue -= avg[ legCurrent ];
-    stateGlobal.currentValue = map(stateGlobal.currentValue, -800, 800, 0, 179);
+    stateGlobal.currLightValue -= avgLightValue[ legCurrent ];
+    stateGlobal.currLightValue = map(stateGlobal.currLightValue, -800, 800, 0, 179);
 
     // detect events
     stateGlobal.triggerEvent = false;
-    goingUp = pos[ legCurrent ] > lastInVal[ legCurrent ];
-    if (goingUp == lastGoingUp[ legCurrent ]) {
-      lightChangeDelta += abs(pos[ legCurrent ] - lastInVal[ legCurrent ]);
+    isGoingUp = stateGlobal.currLightValue > lastLightValue[ legCurrent ];
+    if (isGoingUp == wasGoingUp[ legCurrent ]) {
+      lightChangeDelta += abs(stateGlobal.currLightValue - lastLightValue[ legCurrent ]);
     } else {
       // when the direction changes check
       // if we traveled far
@@ -108,12 +107,12 @@ void loop() {
     }
 
     // --- Perform movement behavior ---
-    pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, pos[ legCurrent ] );
+    servoPos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
 
-    servo[ legCurrent ].write(pos[ legCurrent ]);
+    servoCtrl[ legCurrent ].write(servoPos[ legCurrent ]);
 
-    lastInVal[ legCurrent ] = pos[ legCurrent ];
-    lastGoingUp[ legCurrent ] = goingUp;
+    lastLightValue[ legCurrent ] = stateGlobal.currLightValue;
+    wasGoingUp[ legCurrent ] = isGoingUp;
 
     // Test. Change behavior every 4 seconds.
     // The changes should happen according
@@ -124,16 +123,16 @@ void loop() {
   }
 
   // schedule the next update,
-  if (doUpdAvg) {
+  if (doUpdateLightAvg) {
     timeToUpdAvg++;
   }
 
   /*
-  Serial.print(pos[0]);
+  Serial.print(servoPos[0]);
   Serial.print(", ");
-  Serial.print(pos[1]);
+  Serial.print(servoPos[1]);
   Serial.print(", ");
-  Serial.print(pos[2]);
+  Serial.print(servoPos[2]);
   Serial.println();
   */
 

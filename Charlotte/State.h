@@ -5,6 +5,8 @@
 #ifndef CHARLOTTE_STATE_H
 #define CHARLOTTE_STATE_H
 
+// passing the position into the 'State' would make a mess
+// init of arrays dynamically (as constuctor) isn't nice
 struct State
 {
     float time          = 0.0;

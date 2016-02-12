@@ -5,13 +5,6 @@
 //----------------------------- GLOBAL VARIABLES -----------------------------------
 //----------------------------------------------------------------------------------
 
-//struct State
-//{
-//    float time          = 0.0;
-//    int   currentValue  = 0;
-//    bool  triggerEvent  = false;
-//};
-
 State stateGlobal;
 
 
@@ -56,7 +49,7 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 
 //using       func_ptr_t = int ( * )( State, int );
 //func_ptr_t  behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
-int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int );
+int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int, int[] );
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -86,7 +79,7 @@ void loop() {
   // Update average once per second
   doUpdAvg = (millis() / 1000) > timeToUpdAvg;
 
-    stateGlobal.time = millis() * speed;
+  stateGlobal.time = millis() * speed;
 
   for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
     stateGlobal.currentValue = analogRead(inPin[ legCurrent ]);
@@ -97,8 +90,8 @@ void loop() {
       avg[ legCurrent ] /= 2;
     }
 
-      stateGlobal.currentValue -= avg[ legCurrent ];
-      stateGlobal.currentValue = map(stateGlobal.currentValue, -800, 800, 0, 179);
+    stateGlobal.currentValue -= avg[ legCurrent ];
+    stateGlobal.currentValue = map(stateGlobal.currentValue, -800, 800, 0, 179);
 
     // detect events
     stateGlobal.triggerEvent = false;
@@ -113,9 +106,9 @@ void loop() {
       }
       lightChangeDelta = 0;
     }
-      
-      // Perform movement behavior
-      pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent );
+
+    // --- Perform movement behavior ---
+    pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, pos );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 

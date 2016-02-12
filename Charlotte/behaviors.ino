@@ -2,16 +2,17 @@
 //----------------------------------------------------------------------------------
 
 
-int behaviorDirected( State state, int leg )
+#include <Arduino.h>
+
+int behaviorDirected( State state, int leg, int position[] )
 {
-    //TODO do I have to pass the position?
-//  pos[ leg ] += constrain( state.currentValue, 50, 140);
-//  pos[ leg ] /= 2;
+    //TODO check 'int' precision -> what's the pupose of that function?
+    return ( position[ leg ] + constrain( state.currentValue, 50, 140 ) ) / 2;
 }
 
 //----------------------------------------------------------------------------------
 
-int behaviorTurn( State state, int leg  )
+int behaviorTurn( State state, int leg, int position[] )
 {
   // Sign of +leg  decides rotation direction
   // time decides the rotation speed
@@ -20,7 +21,7 @@ int behaviorTurn( State state, int leg  )
 
 //----------------------------------------------------------------------------------
 
-int behaviorRandom( State state, int leg )
+int behaviorRandom( State state, int leg, int position[] )
 {
   if ( state.triggerEvent )
   {
@@ -30,7 +31,7 @@ int behaviorRandom( State state, int leg )
 
 //----------------------------------------------------------------------------------
 
-int behaviorWalk( State state, int leg )
+int behaviorWalk( State state, int leg, int position[] )
 {
   if ( leg == 0) {
       return int(95 + 45 * impulse(7, state.time - int(state.time) ) );
@@ -42,7 +43,7 @@ int behaviorWalk( State state, int leg )
 
 //----------------------------------------------------------------------------------
 
-int behaviorYoga( State state, int leg )
+int behaviorYoga( State state, int leg, int position[] )
 {
   return int(95 + 55 * ( sin( state.time ) ) );
 }

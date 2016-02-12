@@ -1,15 +1,16 @@
 #include <Servo.h>
+#include <Arduino.h>
+#include <State.h>
 
 //----------------------------- GLOBAL VARIABLES -----------------------------------
 //----------------------------------------------------------------------------------
 
-struct State
-{
-    float time          = 0.0;
-    int   currentValue  = 0;
-    bool  triggerEvent  = false;
-};
-
+//struct State
+//{
+//    float time          = 0.0;
+//    int   currentValue  = 0;
+//    bool  triggerEvent  = false;
+//};
 
 State stateGlobal;
 
@@ -53,8 +54,9 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
 
-using       func_ptr_t = int ( * )( State, int );
-func_ptr_t  behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
+//using       func_ptr_t = int ( * )( State, int );
+//func_ptr_t  behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
+int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int );
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------

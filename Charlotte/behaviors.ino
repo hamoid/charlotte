@@ -1,9 +1,6 @@
 //----------------------------- FUNCTION DECLARATION -------------------------------
 //----------------------------------------------------------------------------------
 
-
-#include <Arduino.h>
-
 int behaviorDirected( State state, int leg, int position[] )
 {
     //TODO check 'int' precision -> what's the pupose of that function?

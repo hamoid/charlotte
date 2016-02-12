@@ -49,7 +49,7 @@ float behaviorTime      = 0.5; // this will increase from 0 to 1
 
 //using       func_ptr_t = int ( * )( State, int );
 //func_ptr_t  behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ];
-int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int, int[] );
+int ( *behaviorPointerArray[ BEHAVIOR_MAX_AMOUNT ] )( State, int, int );
 
 //----------------------------- SETUP ----------------------------------------------
 //----------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void loop() {
     }
 
     // --- Perform movement behavior ---
-    pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, pos );
+    pos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, pos[ legCurrent ] );
 
     servo[ legCurrent ].write(pos[ legCurrent ]);
 

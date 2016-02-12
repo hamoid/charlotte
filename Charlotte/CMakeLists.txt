@@ -5,4 +5,7 @@ project(${PROJECT_NAME})
 
 set(${CMAKE_PROJECT_NAME}_SKETCH Charlotte.ino)
 set(Servo_RECURSE True)
-generate_arduino_firmware(${CMAKE_PROJECT_NAME})
+generate_arduino_firmware(
+        ${CMAKE_PROJECT_NAME}
+        SRCS Charlotte.ino behaviors.ino math.ino
+        )

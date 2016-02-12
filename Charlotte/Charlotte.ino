@@ -1,16 +1,6 @@
 #include <Servo.h>
 #include <Arduino.h>
-//----------------------------------------------------------------------------------
-//----------------------------- CLion Hack -----------------------------------------
-//-------------- Comment out the header. Uncomment the State struct ----------------
-
-#include <State.h>
-//struct State
-//{
-//    float time          = 0.0;
-//    int   currentValue  = 0;
-//    bool  triggerEvent  = false;
-//};
+#include "State.h"
 
 //----------------------------- GLOBAL VARIABLES -----------------------------------
 //----------------------------------------------------------------------------------

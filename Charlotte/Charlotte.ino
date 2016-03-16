@@ -12,6 +12,7 @@ State stateGlobal;
 // maintain a reasonable rate of events?
 const int   LIGHT_CHANGE_THRESHOLD = 15;
 const int   BEHAVIOR_MAX_AMOUNT = 5;
+
 const int   BEHAVIOR_DIRECT     = 0;
 const int   BEHAVIOR_TURN       = 1;
 const int   BEHAVIOR_EV_RND     = 2;
@@ -60,13 +61,13 @@ void setup() {
   }
   Serial.begin(9600);
 
-    // Function pointer assignment not possible to be global (so done here)
-    // Assume the declaration has to be assigned first via compiler
-    behaviorPointerArray[ BEHAVIOR_DIRECT ]    =   behaviorDirected;
-    behaviorPointerArray[ BEHAVIOR_TURN ]      =   behaviorTurn;
-    behaviorPointerArray[ BEHAVIOR_EV_RND ]    =   behaviorRandom;
-    behaviorPointerArray[ BEHAVIOR_WALK ]      =   behaviorWalk;
-    behaviorPointerArray[ BEHAVIOR_YOGA ]      =   behaviorYoga;
+  // Function pointer assignment not possible to be global (so done here)
+  // Assume the declaration has to be assigned first via compiler
+  behaviorPointerArray[ BEHAVIOR_DIRECT ]    =   behaviorDirected;
+  behaviorPointerArray[ BEHAVIOR_TURN ]      =   behaviorTurn;
+  behaviorPointerArray[ BEHAVIOR_EV_RND ]    =   behaviorRandom;
+  behaviorPointerArray[ BEHAVIOR_WALK ]      =   behaviorWalk;
+  behaviorPointerArray[ BEHAVIOR_YOGA ]      =   behaviorYoga;
 
 }
 

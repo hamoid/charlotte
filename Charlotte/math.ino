@@ -2,6 +2,7 @@ float impulse( float k, float x ) {
   float h = k * x;
   return h * exp(1.0f - h);
 }
+// Currently unused, replaced by impulse()
 float normalized_atan2(float y, float x) {
     static const uint32_t sign_mask = 0x80000000;
     static const float b = 0.596227f;

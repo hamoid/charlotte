@@ -38,11 +38,12 @@ boolean     wasGoingUp[LEGS] = { true, true, true };
 float speed = 0.0008;
 float range = 1.0; // unused so far
 
+int   behaviorCurrent   = BEHAVIOR_YOGA;
+int   behaviorNext      = BEHAVIOR_YOGA;
+float behaviorTime      = 0.0; // this increases from 0 to 1
+float behaviorSpeed     = 0.0; // increment for behaviorTime. Can be positive, negative or 0.
 
-// TODO: generate both behaviours, and then cross fade them
-int   behaviorCurrent   = 1; // unused so far
-int   behaviorNext      = 1; // unused so far
-float behaviorTime      = 0.5; // this will increase from 0 to 1
+int tempEventCounter = 0; // for counting light events and acting when they're high enough.
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
@@ -106,9 +107,19 @@ void loop() {
       }
       lightChangeDelta = 0;
     }
+    if(stateGlobal.triggerEvent) {
+      tempEventCounter++;
+    }
 
     // --- Perform movement behavior ---
-    servoPos[ legCurrent ] = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
+    // Note: each leg receives a possible triggerEvent from the corresponding eye.
+    // Currently we have no way to detecting circular (or other kinds of) triggereEvent patterns.
+    // We might want to compare the event frequencies of each leg to move in that direction.
+    // That means keeping track of event frequencies per sensor. And that's the way to switch between
+    // behaviors, by changing frequencies.
+    int pos0 = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
+    int pos1 = behaviorPointerArray[ behaviorNext ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
+    servoPos[ legCurrent ] = pos0 * (1 - behaviorTime) + pos1 * behaviorTime;
 
     servoCtrl[ legCurrent ].write(servoPos[ legCurrent ]);
 
@@ -118,9 +129,30 @@ void loop() {
     // Test. Change behavior every 4 seconds.
     // The changes should happen according
     // to user interaction (in the future)
-    behaviorCurrent = (millis() / 4000) % 5;
+    // behaviorCurrent = (millis() / 4000) % 5;
 
     delay(15);
+  }
+  
+  // test. after some events, start interpolating to the next behavior
+  if(tempEventCounter >= 9) {
+    behaviorSpeed = 0.01 + random(10) * 0.09;
+    behaviorNext = random(BEHAVIOR_MAX_AMOUNT);
+    tempEventCounter = 0;
+  }
+
+  // if we are interpolating behaviors
+  if(behaviorSpeed > 0) {
+    // increase time
+    behaviorTime += behaviorSpeed;
+    // if we complete the interpolation
+    if(behaviorTime > 1) {
+      // stop interpolating
+      behaviorTime = 0;
+      behaviorSpeed = 0;
+      // and make the current behavior equal to the next behavior
+      behaviorCurrent = behaviorNext;
+    }
   }
 
   // schedule the next update,
@@ -128,14 +160,7 @@ void loop() {
     timeToUpdAvg++;
   }
 
-  /*
-  Serial.print(servoPos[0]);
-  Serial.print(", ");
-  Serial.print(servoPos[1]);
-  Serial.print(", ");
-  Serial.print(servoPos[2]);
-  Serial.println();
-  */
+  //debugInt3(servoPos);
 
 }
 

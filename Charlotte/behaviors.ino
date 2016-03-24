@@ -27,11 +27,14 @@ int behaviorRandom( State state, int leg, int servoPosCurrent )
 
 int behaviorWalk( State state, int leg, int servoPosCurrent )
 {
-  if ( leg == 0) {
+  switch ( leg ) {
+    case 0:
       return int(95 + 45 * impulse(7, state.time - int(state.time) ) );
-  }
-  if ( leg == 1) {
+    case 1:
       return int(95 - 45 * impulse(7, state.time - int(state.time) ) );
+    case 2:
+      // third leg is more or less straight, but controllable
+      return int(constrain( state.currLightValue, 75, 115 ));
   }
   return servoPosCurrent;
 }

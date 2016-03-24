@@ -40,10 +40,10 @@ boolean     wasGoingUp[LEGS]     = { true, true, true };
 const float BASE_SPEED = 0.04;
 float speed = BASE_SPEED;
 
-int   behaviorCurrent   = BEHAVIOR_DEAD;
-int   behaviorNext      = BEHAVIOR_DEAD;
-float behaviorTime      = 0.0; // this increases from 0 to 1
-float behaviorSpeed     = 0.0; // increment for behaviorTime. Can be positive, negative or 0.
+int   behaviorCurrent    = BEHAVIOR_DEAD;
+int   behaviorNext       = BEHAVIOR_DEAD;
+float behaviorTime       = 0.0; // this increases from 0 to 1
+float interpolationSpeed = 0.0; // increment for behaviorTime. Can be positive or 0.
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
@@ -81,9 +81,9 @@ void loop() {
   doUpdateLightAvg = (millis() / 1000) > timeToUpdAvg;
 
   stateGlobal.time += speed;
-  
+
   // speed decays with time
-  if(speed > BASE_SPEED) {
+  if (speed > BASE_SPEED) {
     speed *= 0.98;
   }
 
@@ -136,44 +136,51 @@ void loop() {
   }
 
   // if we are interpolating behaviors
-  if (behaviorSpeed > 0) {
-    Serial.print(".");
+  if (interpolationSpeed > 0) {
+    // if we are having events, increase interpolation speed
+    if (eventCountCurr[0] + eventCountCurr[1] + eventCountCurr[2] > 2) {
+      interpolationSpeed *= 1.5;
+    }
+
+    //    Serial.print(".");
+
     // increase time
-    behaviorTime += behaviorSpeed;
+    behaviorTime += interpolationSpeed;
     // if we complete the interpolation
     if (behaviorTime > 1) {
       // stop interpolating
       behaviorTime = 0;
-      behaviorSpeed = 0;
+      interpolationSpeed = 0;
       // and make the current behavior equal to the next behavior
       behaviorCurrent = behaviorNext;
     }
   } else {
     switch (eventCountLast[0]) {
       case 0:
-        // if no events, stay doing the same or go dead with 40% probability
-        if (chance(40)) {
-          behaviorSpeed = 0.003 + randomf(0.02);
+        // if no events, stay doing the same or go dead with 30% probability
+        if (chance(30)) {
+          interpolationSpeed = 0.003 + randomf(0.02);
           behaviorNext = BEHAVIOR_DEAD;
         }
         break;
       case 1:
-        behaviorSpeed = 0.003 + randomf(0.02);
+        interpolationSpeed = 0.003 + randomf(0.02);
         behaviorNext = BEHAVIOR_YOGA;
         break;
       case 2:
-        behaviorSpeed = 0.003 + randomf(0.02);
+        interpolationSpeed = 0.003 + randomf(0.02);
         behaviorNext = chance(30) ? BEHAVIOR_WALK : BEHAVIOR_TURN;
+        speed = BASE_SPEED * 2;
         break;
       default:
-        behaviorSpeed = 0.003 + randomf(0.02);
+        interpolationSpeed = 0.003 + randomf(0.02);
         behaviorNext = chance(60) ? BEHAVIOR_DIRECT : BEHAVIOR_EV_RND;
     }
-    Serial.println();
-    Serial.print("events: ");
-    Serial.print(eventCountLast[0]);
-    Serial.print(" behavior: ");
-    Serial.println(behaviorNext);
+    //    Serial.println();
+    //    Serial.print("events: ");
+    //    Serial.print(eventCountLast[0]);
+    //    Serial.print(" behavior: ");
+    //    Serial.println(behaviorNext);
   }
 
   // schedule the next update,

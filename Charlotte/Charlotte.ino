@@ -37,10 +37,8 @@ int         eventCountCurr[LEGS] = { 0, 0, 0 };
 int         eventCountLast[LEGS] = { 0, 0, 0 };
 boolean     wasGoingUp[LEGS]     = { true, true, true };
 
-// TODO: we need envelopes to alter speed and range
-// do we need current resting position, to tween towards that position?
-float speed = 0.04;
-float range = 1.0; // unused so far
+const float BASE_SPEED = 0.04;
+float speed = BASE_SPEED;
 
 int   behaviorCurrent   = BEHAVIOR_DEAD;
 int   behaviorNext      = BEHAVIOR_DEAD;
@@ -83,6 +81,11 @@ void loop() {
   doUpdateLightAvg = (millis() / 1000) > timeToUpdAvg;
 
   stateGlobal.time += speed;
+  
+  // speed decays with time
+  if(speed > BASE_SPEED) {
+    speed *= 0.98;
+  }
 
   for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
     stateGlobal.currLightValue = analogRead(inPin[ legCurrent ]);
@@ -108,12 +111,16 @@ void loop() {
       // when the direction changes check
       // if we traveled far
       if (lightChangeDelta > LIGHT_CHANGE_THRESHOLD) {
+        // TODO: this may be a bit confusing, because it's not global: triggerEvent is only
+        // temporary, and referring to one of the sensors, not all three.
         stateGlobal.triggerEvent = true;
       }
       lightChangeDelta = 0;
     }
     if (stateGlobal.triggerEvent) {
       eventCountCurr[ legCurrent ]++;
+      // speed increases with events
+      speed *= 1.01;
     }
 
     int posCurr = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );

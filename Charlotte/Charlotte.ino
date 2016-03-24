@@ -25,13 +25,15 @@ long        timeToUpdAvg      = 0;
 boolean     doUpdateLightAvg  = false;
 
 const int   LEGS = 3;
+// TODO: put these in a State[LEGS] states, take time out of State?
 Servo       servoCtrl[LEGS];
-int         servoPos[LEGS]        = { 20, 20, 20 };
-int         avgLightValue[LEGS] = { 0, 0, 0 };
-int         inPin[LEGS]      = { 0, 1, 7 };
-int         outPin[LEGS]     = { 2, 10, 12 };
-int         lastLightValue[LEGS]    = { 80, 80, 80 };
-boolean     wasGoingUp[LEGS] = { true, true, true };
+int         servoPos[LEGS]       = { 20, 20, 20 };
+int         avgLightValue[LEGS]  = { 0, 0, 0 };
+int         inPin[LEGS]          = { 0, 1, 7 };
+int         outPin[LEGS]         = { 2, 10, 12 };
+int         lastLightValue[LEGS] = { 80, 80, 80 };
+int         eventCount[LEGS]     = { 0, 0, 0 };
+boolean     wasGoingUp[LEGS]     = { true, true, true };
 
 // TODO: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
@@ -42,8 +44,6 @@ int   behaviorCurrent   = BEHAVIOR_YOGA;
 int   behaviorNext      = BEHAVIOR_YOGA;
 float behaviorTime      = 0.0; // this increases from 0 to 1
 float behaviorSpeed     = 0.0; // increment for behaviorTime. Can be positive, negative or 0.
-
-int tempEventCounter = 0; // for counting light events and acting when they're high enough.
 
 //----------------------------- Function Prototypes ---------------------------------
 //----------------------------------------------------------------------------------
@@ -89,6 +89,8 @@ void loop() {
       // lerp 50% towards read value
       avgLightValue[ legCurrent ] += stateGlobal.currLightValue;
       avgLightValue[ legCurrent ] /= 2;
+      // reset event counter once per second
+      eventCount[ legCurrent ] = 0;
     }
 
     stateGlobal.currLightValue -= avgLightValue[ legCurrent ];
@@ -108,7 +110,7 @@ void loop() {
       lightChangeDelta = 0;
     }
     if(stateGlobal.triggerEvent) {
-      tempEventCounter++;
+      eventCount[ legCurrent ]++;
     }
 
     // --- Perform movement behavior ---
@@ -126,19 +128,14 @@ void loop() {
     lastLightValue[ legCurrent ] = stateGlobal.currLightValue;
     wasGoingUp[ legCurrent ] = isGoingUp;
 
-    // Test. Change behavior every 4 seconds.
-    // The changes should happen according
-    // to user interaction (in the future)
-    // behaviorCurrent = (millis() / 4000) % 5;
-
     delay(15);
   }
   
-  // test. after some events, start interpolating to the next behavior
-  if(tempEventCounter >= 9) {
+  // test. if 4 or more events per second, random new behavior
+  if(eventCount[0] >= 4) {
     behaviorSpeed = 0.01 + random(10) * 0.09;
     behaviorNext = random(BEHAVIOR_MAX_AMOUNT);
-    tempEventCounter = 0;
+    eventCount[0] = 0;
   }
 
   // if we are interpolating behaviors

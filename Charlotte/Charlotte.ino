@@ -35,7 +35,7 @@ boolean     wasGoingUp[LEGS] = { true, true, true };
 
 // TODO: we need envelopes to alter speed and range
 // do we need current resting position, to tween towards that position?
-float speed = 0.0008;
+float speed = 0.04;
 float range = 1.0; // unused so far
 
 int   behaviorCurrent   = BEHAVIOR_YOGA;
@@ -80,7 +80,7 @@ void loop() {
   // Update average once per second
   doUpdateLightAvg = (millis() / 1000) > timeToUpdAvg;
 
-  stateGlobal.time = millis() * speed;
+  stateGlobal.time += speed;
 
   for (int legCurrent = 0; legCurrent < LEGS; legCurrent++) {
     stateGlobal.currLightValue = analogRead(inPin[ legCurrent ]);

@@ -11,13 +11,14 @@ State stateGlobal;
 // Maybe the threshold should change to
 // maintain a reasonable rate of events?
 const int   LIGHT_CHANGE_THRESHOLD = 15;
-const int   BEHAVIOR_MAX_AMOUNT = 5;
+const int   BEHAVIOR_MAX_AMOUNT = 6;
 
 const int   BEHAVIOR_DIRECT     = 0;
 const int   BEHAVIOR_TURN       = 1;
 const int   BEHAVIOR_EV_RND     = 2;
 const int   BEHAVIOR_WALK       = 3;
 const int   BEHAVIOR_YOGA       = 4;
+const int   BEHAVIOR_DEAD       = 5;
 
 int         lightChangeDelta  = 0;
 boolean     isGoingUp         = true;
@@ -32,7 +33,8 @@ int         avgLightValue[LEGS]  = { 0, 0, 0 };
 int         inPin[LEGS]          = { 0, 1, 7 };
 int         outPin[LEGS]         = { 2, 10, 12 };
 int         lastLightValue[LEGS] = { 80, 80, 80 };
-int         eventCount[LEGS]     = { 0, 0, 0 };
+int         eventCountCurr[LEGS] = { 0, 0, 0 };
+int         eventCountLast[LEGS] = { 0, 0, 0 };
 boolean     wasGoingUp[LEGS]     = { true, true, true };
 
 // TODO: we need envelopes to alter speed and range
@@ -40,8 +42,8 @@ boolean     wasGoingUp[LEGS]     = { true, true, true };
 float speed = 0.04;
 float range = 1.0; // unused so far
 
-int   behaviorCurrent   = BEHAVIOR_YOGA;
-int   behaviorNext      = BEHAVIOR_YOGA;
+int   behaviorCurrent   = BEHAVIOR_DEAD;
+int   behaviorNext      = BEHAVIOR_DEAD;
 float behaviorTime      = 0.0; // this increases from 0 to 1
 float behaviorSpeed     = 0.0; // increment for behaviorTime. Can be positive, negative or 0.
 
@@ -64,12 +66,12 @@ void setup() {
 
   // Function pointer assignment not possible to be global (so done here)
   // Assume the declaration has to be assigned first via compiler
-  behaviorPointerArray[ BEHAVIOR_DIRECT ]    =   behaviorDirected;
+  behaviorPointerArray[ BEHAVIOR_DIRECT ]    =   behaviorDirect;
   behaviorPointerArray[ BEHAVIOR_TURN ]      =   behaviorTurn;
   behaviorPointerArray[ BEHAVIOR_EV_RND ]    =   behaviorRandom;
   behaviorPointerArray[ BEHAVIOR_WALK ]      =   behaviorWalk;
   behaviorPointerArray[ BEHAVIOR_YOGA ]      =   behaviorYoga;
-
+  behaviorPointerArray[ BEHAVIOR_DEAD ]      =   behaviorDead;
 }
 
 //----------------------------- LOOP -----------------------------------------------
@@ -90,7 +92,8 @@ void loop() {
       avgLightValue[ legCurrent ] += stateGlobal.currLightValue;
       avgLightValue[ legCurrent ] /= 2;
       // reset event counter once per second
-      eventCount[ legCurrent ] = 0;
+      eventCountLast[ legCurrent ] = eventCountCurr[ legCurrent ];
+      eventCountCurr[ legCurrent ] = 0;
     }
 
     stateGlobal.currLightValue -= avgLightValue[ legCurrent ];
@@ -109,8 +112,8 @@ void loop() {
       }
       lightChangeDelta = 0;
     }
-    if(stateGlobal.triggerEvent) {
-      eventCount[ legCurrent ]++;
+    if (stateGlobal.triggerEvent) {
+      eventCountCurr[ legCurrent ]++;
     }
 
     // --- Perform movement behavior ---
@@ -130,26 +133,46 @@ void loop() {
 
     delay(15);
   }
-  
-  // test. if 4 or more events per second, random new behavior
-  if(eventCount[0] >= 4) {
-    behaviorSpeed = 0.01 + random(10) * 0.09;
-    behaviorNext = random(BEHAVIOR_MAX_AMOUNT);
-    eventCount[0] = 0;
-  }
 
   // if we are interpolating behaviors
-  if(behaviorSpeed > 0) {
+  if (behaviorSpeed > 0) {
+    Serial.print(".");
     // increase time
     behaviorTime += behaviorSpeed;
     // if we complete the interpolation
-    if(behaviorTime > 1) {
+    if (behaviorTime > 1) {
       // stop interpolating
       behaviorTime = 0;
       behaviorSpeed = 0;
       // and make the current behavior equal to the next behavior
       behaviorCurrent = behaviorNext;
     }
+  } else {
+    switch (eventCountLast[0]) {
+      case 0:
+        // if no events, stay doing the same or go dead with 40% probability
+        if (chance(40)) {
+          behaviorSpeed = 0.003 + randomf(0.02);
+          behaviorNext = BEHAVIOR_DEAD;
+        }
+        break;
+      case 1:
+        behaviorSpeed = 0.003 + randomf(0.02);
+        behaviorNext = BEHAVIOR_YOGA;
+        break;
+      case 2:
+        behaviorSpeed = 0.003 + randomf(0.02);
+        behaviorNext = chance(30) ? BEHAVIOR_WALK : BEHAVIOR_TURN;
+        break;
+      default:
+        behaviorSpeed = 0.003 + randomf(0.02);
+        behaviorNext = chance(60) ? BEHAVIOR_DIRECT : BEHAVIOR_EV_RND;
+    }
+    Serial.println();
+    Serial.print("events: ");
+    Serial.print(eventCountLast[0]);
+    Serial.print(" behavior: ");
+    Serial.println(behaviorNext);
   }
 
   // schedule the next update,

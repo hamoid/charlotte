@@ -1,10 +1,10 @@
 //----------------------------- FUNCTION DECLARATION -------------------------------
 //----------------------------------------------------------------------------------
 
-int behaviorDirected( State state, int leg, int servoPosCurrent )
+int behaviorDirect( State state, int leg, int servoPosCurrent )
 {
-    //TODO check 'int' precision -> what's the pupose of that function?
-    return ( servoPosCurrent + constrain( state.currLightValue, 50, 140 ) ) / 2;
+  //TODO check 'int' precision -> what's the pupose of that function?
+  return ( servoPosCurrent + constrain( state.currLightValue, 50, 140 ) ) / 2;
 }
 
 //----------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ int behaviorTurn( State state, int leg, int servoPosCurrent )
 {
   // Sign of +leg  decides rotation direction
   // time decides the rotation speed
-    return int(95 + 55 * sin( state.time + leg  * 2.07));
+  return int(95 + 55 * sin( state.time + leg  * 2.07));
 }
 
 //----------------------------------------------------------------------------------
@@ -44,4 +44,11 @@ int behaviorWalk( State state, int leg, int servoPosCurrent )
 int behaviorYoga( State state, int leg, int servoPosCurrent )
 {
   return int(95 + 55 * ( sin( state.time ) ) );
+}
+
+//----------------------------------------------------------------------------------
+
+int behaviorDead( State state, int leg, int servoPosCurrent )
+{
+  return int(95 + 55 * ( sin( leg + state.time * 0.001 ) ) );
 }

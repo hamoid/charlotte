@@ -116,15 +116,9 @@ void loop() {
       eventCountCurr[ legCurrent ]++;
     }
 
-    // --- Perform movement behavior ---
-    // Note: each leg receives a possible triggerEvent from the corresponding eye.
-    // Currently we have no way to detecting circular (or other kinds of) triggereEvent patterns.
-    // We might want to compare the event frequencies of each leg to move in that direction.
-    // That means keeping track of event frequencies per sensor. And that's the way to switch between
-    // behaviors, by changing frequencies.
-    int pos0 = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
-    int pos1 = behaviorPointerArray[ behaviorNext ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
-    servoPos[ legCurrent ] = pos0 * (1 - behaviorTime) + pos1 * behaviorTime;
+    int posCurr = behaviorPointerArray[ behaviorCurrent ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
+    int posNext = behaviorPointerArray[ behaviorNext ]( stateGlobal, legCurrent, servoPos[ legCurrent ] );
+    servoPos[ legCurrent ] = posCurr * (1 - behaviorTime) + posNext * behaviorTime;
 
     servoCtrl[ legCurrent ].write(servoPos[ legCurrent ]);
 

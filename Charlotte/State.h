@@ -9,9 +9,9 @@
 // init of arrays dynamically (as constuctor) isn't nice
 struct State
 {
-    float time              = 0.0;
+    float time           = 0.0;
     int   currLightValue = 0;
-    bool  triggerEvent      = false;
+    bool  triggerEvent   = false;
 };
 
 #endif //CHARLOTTE_STATE_H

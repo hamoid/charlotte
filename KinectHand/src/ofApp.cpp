@@ -3,12 +3,26 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFullscreen( true );
+    ofHideCursor();
+    
     sensorKinect_.init(false, false);
     sensorKinect_.open();
     sensorKinect_.update();
     
-    nearMin   = 10;
-    farMax    = 150;
+    string xmlConfigFileName = "Settings.txt";
+    
+    if( configXML.loadFile( xmlConfigFileName ) ){
+        ofLogVerbose() << "XML file loaded";
+    }else{
+        ofLogError() << "While loading XML file called /data/" << xmlConfigFileName;
+    }
+    
+    
+    nearMax   = configXML.getValue( "MIN", 245);
+    farMin    = configXML.getValue( "MAX", 255);
+    ofLogNotice() << "Min " << nearMax;
+    ofLogNotice() << "Max " << farMin;
+    
     numPixels_ = sensorKinect_.height * sensorKinect_.width;
     grayImage_.allocate( sensorKinect_.width, sensorKinect_.height );
 }
@@ -24,7 +38,7 @@ void ofApp::update(){
     int         numPixels   = pix.size();
     
     for(int i = 0; i < numPixels; i++) {
-        if( pix[i] > nearMin && pix[i] < farMax ) {
+        if( pix[i] > nearMax && pix[i] < farMin ) {
             pix[i] = 255;
         }
             else {

@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxKinect.h"
 #include "ofxOpenCv.h"
+#include "ofxXmlSettings.h"
 
 class ofApp : public ofBaseApp{
 
@@ -23,12 +24,14 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
+    ofxXmlSettings      configXML;
+    
     ofxKinect           sensorKinect_;
     ofImage             mImage_;
     ofxCvGrayscaleImage grayImage_;
     
     int numPixels_;
-    int nearMin;
-    int farMax;
+    int nearMax;
+    int farMin;
 		
 };

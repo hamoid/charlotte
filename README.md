@@ -10,7 +10,9 @@ A 9 volt battery can make her run for an hour.
 Three servos move her legs.
 An Arduino Nano is her brain, which receives inputs and translate those to movements.
 
+* Instructables by Thomas OReilly - http://www.instructables.com/id/Charlotte/
 * Robot design: Thomas OReilly - http://www.toreilly.com/
+* Thomas' Charlotte GitHub page: https://github.com/t-oreilly/Charlotte (will eventually replace this repo)
 * Robot programming: Abe Pazos - http://hamoid.com
 * CV, light programming and video production: Peter A. Kolski - http://www.bildpeter.de/
 * Light design: Kalma - http://www.kalmalab.com/

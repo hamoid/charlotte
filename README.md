@@ -1,6 +1,6 @@
 # Charlotte
 
-![](http://static1.squarespace.com/static/5418c802e4b04f685d6d9f0f/t/56a4e070a976afaceba09495/1453645952157/?format=1500w)
+![](https://static1.squarespace.com/static/5418c802e4b04f685d6d9f0f/593bdfbed482e99f13697a3f/598b5869c534a5e89d7a44b4/1504175893488/high_res_sml.jpg)
 
 A 3 legged robot.
 
